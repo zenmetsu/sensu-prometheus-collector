@@ -1,61 +1,48 @@
----
-description: "#{repo}"
-builds:
-- platform: "alpine"
-  arch: "amd64"
-  asset_filename: "#{repo}_#{version}_alpine_linux_amd64.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == 'amd64'"
-  -  "entity.system.platform == 'alpine'"
-  -  "entity.system.platform_version.split('.')[0] == '3'"
-- platform: "alpine3.8"
-  arch: "amd64"
-  asset_filename: "#{repo}_#{version}_alpine3.8_linux_amd64.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == 'amd64'"
-  -  "entity.system.platform == 'alpine'"
-- platform: "centos"
-  arch: "amd64"
-  asset_filename: "#{repo}_#{version}_centos_linux_amd64.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == 'amd64'"
-  -  "entity.system.platform_family == 'rhel'"
-- platform: "centos6"
-  arch: "amd64"
-  asset_filename: "#{repo}_#{version}_centos6_linux_amd64.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == 'amd64'"
-  -  "entity.system.platform_family == 'rhel'"
-  -  "entity.system.platform_version.split('.')[0] == '6'"
-- platform: "centos7"
-  arch: "amd64"
-  asset_filename: "#{repo}_#{version}_centos7_linux_amd64.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == 'amd64'"
-  -  "entity.system.platform_family == 'rhel'"
-  -  "entity.system.platform_version.split('.')[0] == '7'"
-- platform: "debian"
-  arch: "amd64"
-  asset_filename: "#{repo}_#{version}_debian_linux_amd64.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == 'amd64'"
-  -  "entity.system.platform_family == 'debian'"
-- platform: "debian9"
-  arch: "amd64"
-  asset_filename: "#{repo}_#{version}_debian9_linux_amd64.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-- "entity.system.arch == 'amd64'"
+sudo: true
+service: docker
+language: ruby
+cache:
+- bundler
+install:
+- bundle install
+before_install:
+  - sudo iptables -L DOCKER || ( echo "DOCKER iptables chain missing" ; sudo iptables -N DOCKER )
+  - gem install bundler -v 1.15
+install:
+- bundle install
+rvm:
+- 2.4.1
+notifications:
+  email:
+    recipients:
+    - vespira@gmail.com
+    on_success: change
+    on_failure: always
+script:
+- gem build sensu-prometheus-collector.gemspec
+- gem install sensu-prometheus-collector-*.gem
+- bundle exec rake default
+before_deploy:
+- bash -c "[ ! -d bonsai/ ] && git clone https://github.com/sensu/sensu-go-bonsai-asset.git bonsai || echo 'bonsai/ exists, skipping git clone'"  
+  
+deploy:
+#- provider: rubygems
+#  api_key:
+#    secure: NEJgqUUESQiGwAIVKDLbpW9gR9zWwaJ9Mm8fPn7zh8gGrfUcmGT3t/NiK3xn/2f7OQDm34YxiVk+z4N90fSGB/SgLraTXzTHDWc8eyLpeCkqeotn/OeBbQ7M4mJNRtR/2nENhvbXhp3IDbzSAR8TzUyIp5junan4NbPOC2+Hms8=
+#  gem: sensu-plugins-cassandra
+#  on:
+#    tags: true
+#    all_branches: true
+#    rvm: 2.4.1
+#    repo: zenmetsu/sensu-prometheus-collector
+- provider: script
+  script: chmod +x bonsai/ruby-runtime/travis-build-ruby-plugin-assets.sh && bonsai/ruby-runtime/travis-build-ruby-plugin-assets.sh sensu-plugins-cassandra
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true
+    rvm: 2.4.1    
+    
+env:
+  global:
+  - secure: Iipy7PQ75Y+EKBrdmiWYvtA41h6pFLj2DYYz1qO+PyvTlYEhwtjpKuSfCSwYWHtc/rxzMk36W3mw6FGOJJTi1KQe/01pBQ6Doff+iIPKhrVkBBFA7PACCkkVX9ZSH3VrXtP3Jrbf2IE6FHu7Qd+9pd+ikrJD5BCt+XScNuytj3cw3xpcaAXkel2po9Blcyi6msWcGsnlEUjCrUtvnBxQ4Y2hdSIRN7lo/GmrXgEFD2uuT7/1oijgJARjUpDO8tqeVhCsXMgbbzsbSwoUczJFwh8N4zieNC7lU0dlwFEp1CJmO//UvMDVedppEa28AFy8PJ16k76sm7/ZhSBRS1DN8ih53TVovsdCxCMdV2nANg9tc8nASq2yqZbwjXIGc+j9cFUCkTZUKC/S8mYciQcXmtNzYSF/Z24s7/aCGeYjQKDjO/EzzPZAe2z4msucfdRT9r1BxKpjDJ7GyIT0PRMNE0K3gNRu9FPwV3bFPwQuEPJSEWA2eJZ2MKnIbsbROsVIX81M7bPUGGmeC+kw4nfTCVDem0w4S3+GRA2WDo54BvYTlmOLoCaYyeUz2MgHHOads4+lj5T4CNVEuvIfQngATvKEiZ+ZCoo4NhyxbT4rvz3WHXf7Dg9/LrL6Ny3c2HlgV6T4qPpJz1n0UGy+OZj8opnAaYHD/neGbYfCAegeknk=
