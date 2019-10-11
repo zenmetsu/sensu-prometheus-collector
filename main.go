@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"math"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/api/prometheus"
@@ -69,9 +70,10 @@ func CreateGraphiteMetrics(samples model.Vector, metricPrefix string) string {
 	for _, sample := range samples {
 		name := fmt.Sprintf("%s%s", metricPrefix, sample.Metric["__name__"])
 
-		val1 := strconv.FormatFloat(float64(sample.Value), 'f', -1, 64)
-		value := val1.replace(np.nan, 0)
-
+		value := strconv.FormatFloat(float64(sample.Value), 'f', -1, 64)
+		if math.isNaN(value) {
+			value = 0
+		}
 		now := time.Now()
 		timestamp := now.Unix()
 
