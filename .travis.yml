@@ -1,48 +1,36 @@
-sudo: true
-service: docker
-language: ruby
-cache:
-- bundler
+language: go
+go:
+- 1.10.x
 install:
-- bundle install
-before_install:
-  - sudo iptables -L DOCKER || ( echo "DOCKER iptables chain missing" ; sudo iptables -N DOCKER )
-  - gem install bundler -v 1.15
-install:
-- bundle install
-rvm:
-- 2.4.1
-notifications:
-  email:
-    recipients:
-    - vespira@gmail.com
-    on_success: change
-    on_failure: always
+- go get gopkg.in/alecthomas/gometalinter.v1
+- go get github.com/gordonklaus/ineffassign
+- go get github.com/jgautheron/goconst/cmd/goconst
+- go get github.com/kisielk/errcheck
+- go get github.com/golang/dep/cmd/dep
+- dep ensure
 script:
-- gem build sensu-prometheus-collector.gemspec
-- gem install sensu-prometheus-collector-*.gem
-- bundle exec rake default
+- gometalinter.v1 --vendor --disable-all --enable=vet --enable=ineffassign
+  --enable=goconst --tests ./...
+
+before_script:
+- echo "REPO $TRAVIS_REPO_SLUG TAG ${TRAVIS_TAG}"
+
 before_deploy:
-- bash -c "[ ! -d bonsai/ ] && git clone https://github.com/sensu/sensu-go-bonsai-asset.git bonsai || echo 'bonsai/ exists, skipping git clone'"  
-  
+- go get github.com/goreleaser/goreleaser
+
 deploy:
-#- provider: rubygems
-#  api_key:
-#    secure: NEJgqUUESQiGwAIVKDLbpW9gR9zWwaJ9Mm8fPn7zh8gGrfUcmGT3t/NiK3xn/2f7OQDm34YxiVk+z4N90fSGB/SgLraTXzTHDWc8eyLpeCkqeotn/OeBbQ7M4mJNRtR/2nENhvbXhp3IDbzSAR8TzUyIp5junan4NbPOC2+Hms8=
-#  gem: sensu-plugins-cassandra
-#  on:
-#    tags: true
-#    all_branches: true
-#    rvm: 2.4.1
-#    repo: zenmetsu/sensu-prometheus-collector
-- provider: script
-  script: chmod +x bonsai/ruby-runtime/travis-build-ruby-plugin-assets.sh && bonsai/ruby-runtime/travis-build-ruby-plugin-assets.sh sensu-plugins-cassandra
-  skip_cleanup: true
-  on:
-    tags: true
-    all_branches: true
-    rvm: 2.4.1    
-    
+  - #goreleaser
+    provider: script
+    script: goreleaser
+    skip_cleanup: true
+    on:
+      tags: true
+
+after_deploy:
+  - git clone https://github.com/sensu/sensu-go-bonsai-asset.git bonsai
+  - bonsai/generate-sha512sum.sh
+  - bonsai/github-release-upload.sh github_api_token=$GITHUB_TOKEN repo_slug="$TRAVIS_REPO_SLUG" tag="${TRAVIS_TAG}" filename="dist/$(cat dist/sha512_file)"
+
 env:
   global:
   - secure: Iipy7PQ75Y+EKBrdmiWYvtA41h6pFLj2DYYz1qO+PyvTlYEhwtjpKuSfCSwYWHtc/rxzMk36W3mw6FGOJJTi1KQe/01pBQ6Doff+iIPKhrVkBBFA7PACCkkVX9ZSH3VrXtP3Jrbf2IE6FHu7Qd+9pd+ikrJD5BCt+XScNuytj3cw3xpcaAXkel2po9Blcyi6msWcGsnlEUjCrUtvnBxQ4Y2hdSIRN7lo/GmrXgEFD2uuT7/1oijgJARjUpDO8tqeVhCsXMgbbzsbSwoUczJFwh8N4zieNC7lU0dlwFEp1CJmO//UvMDVedppEa28AFy8PJ16k76sm7/ZhSBRS1DN8ih53TVovsdCxCMdV2nANg9tc8nASq2yqZbwjXIGc+j9cFUCkTZUKC/S8mYciQcXmtNzYSF/Z24s7/aCGeYjQKDjO/EzzPZAe2z4msucfdRT9r1BxKpjDJ7GyIT0PRMNE0K3gNRu9FPwV3bFPwQuEPJSEWA2eJZ2MKnIbsbROsVIX81M7bPUGGmeC+kw4nfTCVDem0w4S3+GRA2WDo54BvYTlmOLoCaYyeUz2MgHHOads4+lj5T4CNVEuvIfQngATvKEiZ+ZCoo4NhyxbT4rvz3WHXf7Dg9/LrL6Ny3c2HlgV6T4qPpJz1n0UGy+OZj8opnAaYHD/neGbYfCAegeknk=
