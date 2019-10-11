@@ -71,7 +71,7 @@ func CreateGraphiteMetrics(samples model.Vector, metricPrefix string) string {
 		name := fmt.Sprintf("%s%s", metricPrefix, sample.Metric["__name__"])
 
 		value := strconv.FormatFloat(float64(sample.Value), 'f', -1, 64)
-		if math.isNaN(value) {
+		if math.IsNaN(value) {
 			value = 0
 		}
 		now := time.Now()
