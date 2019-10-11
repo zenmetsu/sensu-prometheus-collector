@@ -70,6 +70,7 @@ func CreateGraphiteMetrics(samples model.Vector, metricPrefix string) string {
 		name := fmt.Sprintf("%s%s", metricPrefix, sample.Metric["__name__"])
 
 		value := strconv.FormatFloat(float64(sample.Value), 'f', -1, 64)
+		value := value.replace(np.nan, 0)
 
 		now := time.Now()
 		timestamp := now.Unix()
