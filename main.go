@@ -69,9 +69,9 @@ func CreateGraphiteMetrics(samples model.Vector, metricPrefix string) string {
 
 	for _, sample := range samples {
 		name := fmt.Sprintf("%s%s", metricPrefix, sample.Metric["__name__"])
-		name = strings.Replace(name, "{", "_", -1)
-		name = strings.Replace(name, "}", "_", -1)
-		name = strings.Replace(name, ",", "_", -1)
+//		name = strings.Replace(name, "{", "_", -1)
+//		name = strings.Replace(name, "}", "_", -1)
+//		name = strings.Replace(name, ",", "_", -1)
 
 		value := strconv.FormatFloat(float64(0), 'f', -1, 64)
 		if math.IsNaN(float64(sample.Value)) == false {
