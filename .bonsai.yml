@@ -1,58 +1,61 @@
 ---
 description: "#{repo}"
 builds:
-- platform: "linux"
+- platform: "alpine"
   arch: "amd64"
-  asset_filename: "#{repo}_#{version}_linux_amd64.tar.gz"
+  asset_filename: "#{repo}_#{version}_alpine_linux_amd64.tar.gz"
   sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
   filter:
   -  "entity.system.os == 'linux'"
   -  "entity.system.arch == 'amd64'"
-
-- platform: "linux"
-  arch: "386"
-  asset_filename: "#{repo}_#{version}_linux_386.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == '386'"
-
-- platform: "linux"
-  arch: "arm64"
-  asset_filename: "#{repo}_#{version}_linux_arm64.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == 'arm64'"
-
-- platform: "linux"
-  arch: "armv7"
-  asset_filename: "#{repo}_#{version}_linux_armv7.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'linux'"
-  -  "entity.system.arch == 'armv7'"
-
-- platform: "OSX"
+  -  "entity.system.platform == 'alpine'"
+  -  "entity.system.platform_version.split('.')[0] == '3'"
+- platform: "alpine3.8"
   arch: "amd64"
-  asset_filename: "#{repo}_#{version}_darwin_amd64.tar.gz"
+  asset_filename: "#{repo}_#{version}_alpine3.8_linux_amd64.tar.gz"
   sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
   filter:
-  -  "entity.system.os == 'darwin'"
+  -  "entity.system.os == 'linux'"
   -  "entity.system.arch == 'amd64'"
-
-- platform: "OSX"
-  arch: "386"
-  asset_filename: "#{repo}_#{version}_darwin_386.tar.gz"
-  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
-  filter:
-  -  "entity.system.os == 'darwin'"
-  -  "entity.system.arch == '386'"
-
-- platform: "Windows"
+  -  "entity.system.platform == 'alpine'"
+- platform: "centos"
   arch: "amd64"
-  asset_filename: "#{repo}_#{version}_windows_amd64.tar.gz"
+  asset_filename: "#{repo}_#{version}_centos_linux_amd64.tar.gz"
   sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
   filter:
-  -  "entity.system.os == 'windows'"
+  -  "entity.system.os == 'linux'"
   -  "entity.system.arch == 'amd64'"
+  -  "entity.system.platform_family == 'rhel'"
+- platform: "centos6"
+  arch: "amd64"
+  asset_filename: "#{repo}_#{version}_centos6_linux_amd64.tar.gz"
+  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
+  filter:
+  -  "entity.system.os == 'linux'"
+  -  "entity.system.arch == 'amd64'"
+  -  "entity.system.platform_family == 'rhel'"
+  -  "entity.system.platform_version.split('.')[0] == '6'"
+- platform: "centos7"
+  arch: "amd64"
+  asset_filename: "#{repo}_#{version}_centos7_linux_amd64.tar.gz"
+  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
+  filter:
+  -  "entity.system.os == 'linux'"
+  -  "entity.system.arch == 'amd64'"
+  -  "entity.system.platform_family == 'rhel'"
+  -  "entity.system.platform_version.split('.')[0] == '7'"
+- platform: "debian"
+  arch: "amd64"
+  asset_filename: "#{repo}_#{version}_debian_linux_amd64.tar.gz"
+  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
+  filter:
+  -  "entity.system.os == 'linux'"
+  -  "entity.system.arch == 'amd64'"
+  -  "entity.system.platform_family == 'debian'"
+- platform: "debian9"
+  arch: "amd64"
+  asset_filename: "#{repo}_#{version}_debian9_linux_amd64.tar.gz"
+  sha_filename: "#{repo}_#{version}_sha512-checksums.txt"
+  filter:
+  -  "entity.system.os == 'linux'"
+- "entity.system.arch == 'amd64'"
