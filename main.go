@@ -70,10 +70,12 @@ func CreateGraphiteMetrics(samples model.Vector, metricPrefix string) string {
 	for _, sample := range samples {
 		name := fmt.Sprintf("%s%s", metricPrefix, sample.Metric["__name__"])
 
-		value := strconv.FormatFloat(float64(sample.Value), 'f', -1, 64)
-		if math.IsNaN(value) {
-			value = 0
+		if math.IsNan(Value) {
+			value := 0
+		} else {
+			value := strconv.FormatFloat(float64(sample.Value), 'f', -1, 64)
 		}
+
 		now := time.Now()
 		timestamp := now.Unix()
 
