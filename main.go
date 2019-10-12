@@ -64,7 +64,7 @@ func CreateJSONMetrics(samples model.Vector) string {
 	return string(jsonMetrics)
 }
 
-func CreateGraphiteMetrics(samples model.Vector, metricPrefix string) string {
+func CreateGraphite2Metrics(samples model.Vector, metricPrefix string) string {
 	metrics := ""
 
 	for _, sample := range samples {
@@ -84,6 +84,42 @@ func CreateGraphiteMetrics(samples model.Vector, metricPrefix string) string {
 		metric := fmt.Sprintf("%s %s %d\n", name, value, timestamp)
 
 		metrics += metric
+	}
+
+	return metrics
+}
+
+func CreateGraphiteMetrics(samples model.Vector, metricPrefix string) string {
+	metrics := ""
+
+	for _, sample := range samples {
+		metric := fmt.Sprintf("%s%s", metricPrefix, sample.Metric["__name__"])
+
+		for name, value := range sample.Metric {
+			if name != "__name__" {
+				tags := fmt.Sprintf(",%s=%s", name, value)
+				if !strings.Contains(tags, "\n") && strings.Count(tags, "=") == 1 {
+					metric += tags
+				}
+			}
+		}
+
+		metric = strings.Replace(metric, "\n", "", -1)
+
+		value := strconv.FormatFloat(float64(0), 'f', -1, 64)
+		if math.IsNaN(float64(sample.Value)) == false {
+			value = strconv.FormatFloat(float64(sample.Value), 'f', -1, 64)
+		}
+
+		now := time.Now()
+		timestamp := now.Unix()
+
+		metric += fmt.Sprintf(" %s %d\n", value, timestamp)
+
+		segments := strings.Split(metric, " ")
+		if len(segments) == 3 {
+			metrics += metric
+		}
 	}
 
 	return metrics
